@@ -1,0 +1,105 @@
+---
+title: "Linear Models Version1 - Ramsay"
+author: "Juan Diego Ariza Sanchez"
+date: "2026-07-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(fda)
+data("daily")
+```
+
+# Functional Linear Models
+
+This is a Markdown that implements the most basic models explained in the book of Ramsay, the codes in here can be used for future reference. Some mathematical notation will also be deployed.
+
+## Functional Linear Models for Scalar Responses
+
+Similar as the multivariate linear model but exploiting the mesh of times one have the following functional linear model for scalar response: $$
+y_i = \alpha_0 + \int x_i(t)\beta (t) dt + \epsilon_i
+$$ How to estimate $\beta(t)$? There are two options:
+
+-   Use a basis coefficient expansion $\beta(t) = \sum_k^K c_k \phi_k(t)$
+-   Use PCA
+
+### Example
+
+Here we model the logarithm of annual precipitation for 35 Canadian weather stations from their temperature profiles. In other words, $y_i$ is the log annual precipitation and $x_i(t)$ are the temperature profiles. Now, lets create the scalar variable (annualprec) and the functional one (tempfd)
+
+```{r Functional preprocess}
+# Scalar variable
+annualprec = log10(apply(daily$precav,2,sum))
+# Functional variable
+tempbasis =create.fourier.basis(c(0,365),65)
+tempSmooth=smooth.basis(day.5,daily$tempav,tempbasis)
+tempfd =tempSmooth$fd
+```
+
+For educational purpouses, let's plot the functional variable
+
+```{r}
+plot(tempfd)
+```
+
+And now, let's create the regressor structure
+
+```{r X(t)}
+templist = vector("list",2)
+templist[[1]] = rep(1,35)
+templist[[2]] = tempfd
+```
+
+#### First strategy to estimate $\beta(t)$
+
+Keep the dimensionality $K$ of $b$ small relative to $N$. Here let's set $K=5$.
+
+```{r Basis Coefficient 1}
+conbasis = create.constant.basis(c(0,365))
+betabasis = create.fourier.basis(c(0,365),5)
+betalist = vector("list",2)
+betalist[[1]] = conbasis
+betalist[[2]] = betabasis
+```
+
+Now, we run the function *fRegress* 
+
+```{r Model 1}
+fRegressList = fRegress(annualprec,templist,betalist)
+```
+
+The result *betaestlist* contains the estimated regression coefficient functions. Each of these is a functional parameter object. We can plot the estimate of the regression function for the temperature profiles:
+
+```{r}
+# Intercept
+coef(betaestlist[[1]])
+#Beta (t)
+betaestlist = fRegressList$betaestlist
+tempbetafd = betaestlist[[2]]$fd
+plot(tempbetafd, xlab="Day", ylab="Beta for temperature")
+```
+##### Quality of the strategy 1
+Let's assess the quality of the previous fit, we can compute the error sums of squares
+
+```{r quality 1}
+# Estimated y (\hat(y))
+annualprechat1 = fRegressList$yhatfdobj
+# Errors
+annualprecres1 = annualprec - annualprechat1
+# SES
+SSE1.1 = sum(annualprecres1^2) #Our model
+SSE0 = sum((annualprec - mean(annualprec))^2) #Null model
+```
+
+We can now compute the squared multiple correlation and the usual F-ratio for comparing these two fits.
+
+```{r}
+(RSQ1 = (SSE0-SSE1.1)/SSE0)
+(Fratio1 = ((SSE0-SSE1.1)/5)/(SSE1.1/29))
+```
+
+#### Second strategy to estimate $\beta(t)$
+Here we will include a roughness penalty. Instead of using a low-dimension basis. The combination of a high-dimensional basis with a roughness penalty reduces the possibilities that either (a) important features are missed or (b) extraneous features are forced into the image by using a basis set that is too small for the application.
+This is a more powerful approach!
+
