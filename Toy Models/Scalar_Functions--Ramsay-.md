@@ -14,9 +14,9 @@ Some mathematical notation will also be deployed.
 Similar as the multivariate linear model but exploiting the mesh of
 times one have the following functional linear model for scalar
 response: 
-$$
+$
 y_i = \alpha_0 + \int x_i(t)\beta (t) dt + \epsilon_i
-$$ 
+$ 
 How to estimate $\beta(t)$? There are two options:
 
 - Use a basis coefficient expansion $\beta(t) = \sum_k^K c_k \phi_k(t)$
