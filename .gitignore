@@ -1,0 +1,57 @@
+# ==============================================================================
+# GITIGNORE - SOLO ELABORACIÓN DE BASES DE DATOS Y BASES FINALES
+# ==============================================================================
+
+# Ignorar todo por defecto
+*
+
+# Permitir el archivo .gitignore
+!.gitignore
+
+# Permitir únicamente la carpeta Scripts y los 4 scripts de elaboración de datos
+!/Scripts/
+/Scripts/*
+!/Scripts/00_extraccion_ipc_base100.py
+!/Scripts/01_script_temperatura.py
+!/Scripts/02_precipitaciones.py
+!/Scripts/03_union_datos.py
+
+# Excluir explícitamente scripts de datos funcionales y visualizaciones
+/Scripts/04_datos_funcionales.r
+/Scripts/05_visualizacion_fda.r
+
+# Permitir únicamente la carpeta Datos_clima y los 4 archivos de datos requeridos
+!/Datos_clima/
+/Datos_clima/*
+!/Datos_clima/CHIRPS_Diario_Deptos_2018_2026.csv
+!/Datos_clima/ERA5_Temperatura_Diaria_Deptos_2018_2026_v2.csv
+!/Datos_clima/IPC_Alimentos_Ciudades_Base100.csv
+!/Datos_clima/Panel_Climatico_Deptos_2018_2026.csv
+
+# Excluir explícitamente cualquier otro archivo de datos
+/Datos_clima/Scores_Funcionales_Clima.csv
+/Datos_clima/IPC_Alimentos_Ciudades_V2.csv
+
+# Excluir explícitamente gráficos, imágenes, archivos fuente DANE y borradores
+/Graficos_FDA/
+/Archivos_IPC/
+/scratch/
+/.system_generated/
+/.gemini/
+/.vscode/
+/.idea/
+README.md
+README*
+
+# Excluir extensiones no autorizadas
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.svg
+*.xlsx
+*.xls
+*.log
+*.tmp
+.DS_Store
+__pycache__/
