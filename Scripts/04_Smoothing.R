@@ -234,3 +234,118 @@ VecinosTempfd <- TempSmooth_v$fd
 plot(VecinosTempfd)
 
 save(VecinosTempfd, matriz_Temp_v, file = "Data_processed/VecinosTemp_fd.RData")
+
+
+# Ciclo FOR ---------------------------------------------------------------
+
+Vecinos <- c("Boyaca", "Huila", "Meta", "Tolima")
+
+# Mapeo para el nombre completo del departamento (ajusta según tus datos)
+nombres_departamento <- c(
+  "Boyaca"  = "Boyaca",
+  "Huila"   = "Huila",
+  "Meta"    = "Meta",
+  "Tolima"  = "Tolima"
+)
+
+for (dep in Vecinos) {
+  
+  # Nombre completo del departamento (para filtrar)
+  dep_full <- nombres_departamento[[dep]]
+  
+  # ---------------------------------------------------------
+  # 1. Extracción y preparación de datos
+  # ---------------------------------------------------------
+  Precip_df <- DatosMeteo_raw[DatosMeteo_raw$departamento == dep_full, c(2, 3)]
+  Temp_df   <- DatosMeteo_raw[DatosMeteo_raw$departamento == dep_full, c(2, 4)]
+  
+  Precip_df <- Precip_df %>%
+    mutate(
+      anio = year(fecha),
+      mes  = month(fecha),
+      dia  = day(fecha),
+      anio_mes = paste(anio, sprintf("%02d", mes), sep = "-")
+    ) %>%
+    group_by(anio_mes) %>%
+    ungroup()
+  
+  Temp_df <- Temp_df %>%
+    mutate(
+      anio = year(fecha),
+      mes  = month(fecha),
+      dia  = day(fecha),
+      anio_mes = paste(anio, sprintf("%02d", mes), sep = "-")
+    ) %>%
+    group_by(anio_mes) %>%
+    ungroup()
+  
+  # ---------------------------------------------------------
+  # 2. PRECIPITACIÓN
+  # ---------------------------------------------------------
+  Precip_df_ancho <- Precip_df %>%
+    select(dia, anio_mes, precip_mm) %>%
+    pivot_wider(names_from = anio_mes, values_from = precip_mm) %>%
+    arrange(dia)
+  
+  matriz_precip <- as.matrix(Precip_df_ancho[, -1])
+  set.seed(2026)
+  matriz_precip <- apply(matriz_precip, 2, function(x) {
+    if (any(is.na(x))) {
+      ifelse(!is.na(x), x, rnorm(length(x[is.na(x)]), 0, 1)^2)
+    } else {
+      x
+    }
+  })
+  
+  # Hiperparámetros smoothing
+  dia_rango <- range(Precip_df_ancho$dia)
+  wbasis <- create.bspline.basis(rangeval = dia_rango, nbasis = 12)
+  
+  PrecipSmooth <- smooth.basis(Precip_df_ancho$dia, matriz_precip, wbasis)
+  Precipfd <- PrecipSmooth$fd
+  
+  # Guardar con nombre dinámico
+  assign(paste0(dep, "Precipfd"), Precipfd)
+  assign(paste0(dep, "matriz_precip"), matriz_precip)
+  save(
+    list = c(paste0(dep, "Precipfd"), paste0(dep, "matriz_precip")),
+    file = paste0("Data_processed/", dep, "Precip_fd.RData")
+  )
+  
+  # ---------------------------------------------------------
+  # 3. TEMPERATURA
+  # ---------------------------------------------------------
+  Temp_df_ancho <- Temp_df %>%
+    select(dia, anio_mes, temp_celsius) %>%
+    pivot_wider(names_from = anio_mes, values_from = temp_celsius) %>%
+    arrange(dia)
+  
+  matriz_temp <- as.matrix(Temp_df_ancho[, -1])
+  set.seed(2026)
+  matriz_temp <- apply(matriz_temp, 2, function(x) {
+    if (any(is.na(x))) {
+      ifelse(!is.na(x), x, rnorm(length(x[is.na(x)]), 17.5, 0.8))
+    } else {
+      x
+    }
+  })
+  
+  # Hiperparámetros smoothing
+  dia_rango <- range(Temp_df_ancho$dia)
+  wbasis <- create.bspline.basis(rangeval = dia_rango, nbasis = 12)
+  
+  TempSmooth <- smooth.basis(Temp_df_ancho$dia, matriz_temp, wbasis)
+  Tempfd <- TempSmooth$fd
+  
+  # Guardar con nombre dinámico
+  assign(paste0(dep, "Tempfd"), Tempfd)
+  assign(paste0(dep, "matriz_temp"), matriz_temp)
+  save(
+    list = c(paste0(dep, "Tempfd"), paste0(dep, "matriz_temp")),
+    file = paste0("Data_processed/", dep, "Temp_fd.RData")
+  )
+  
+  # Mensaje de progreso
+  message("✅ Procesado: ", dep_full)
+}
+
