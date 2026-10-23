@@ -1,10 +1,13 @@
+# Métodos
+
 # Model 1
-Para estos modelos se definirá la variable escalar de respuesta como $y_m = 100 × (ln (IPC_m) − ln (IPC_{m−1}))$
+Para estos modelos se definirá la variable escalar de respuesta como $y_m = 100 \cdot (ln (IPC_m) − ln (IPC_{m−1}))$.
+Para $\gamma_m$ es una variable dummy de mes
 
 ## Model 1.1
 
 $$
-y_m = \alpha_c + \gamma_m + \int_0^K \beta(s) X_m(s) ds + \epsilon_m
+y_m = \alpha_c + \gamma_m + \int_0^K \beta(s) X_{m-1}(s) ds + \epsilon_m
 $$
 
 ## Model 1.2
