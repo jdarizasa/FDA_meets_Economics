@@ -1,4 +1,6 @@
 # Model 1
+Para estos modelos se definirá la variable escalar de respuesta como $y_m = 100 × (ln (IPC_m) − ln (IPC_{m−1}))$
+
 ## Model 1.1
 
 $$
