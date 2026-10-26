@@ -46,14 +46,23 @@ for (j in 1:ncol(dummies)) {
 }
 
   # Model 1.1
-IPC_Temp = fRegress(y_m, templist, betalist)
+IPC_Temp_m11 = fRegress(y_m, templist, betalist)
 
   # Betas estimate
-betaestlist = IPC_Temp$betaestlist
+betaestlist = IPC_Temp_m11$betaestlist
   # \hat(y)
-IPC_prec_1.1 = IPC_Temp$yhatfdobj
+IPC_prec_1.1 = IPC_Temp_m11$yhatfdobj
 
 plot(IPC_prec_1.1, y_m, xlab="predicted", ylab = "observed")
 abline(a=0,b=1)
 
 plot(betaestlist[[2]]$fd, xlab="Day", ylab="Beta for temperature")
+
+
+# Quality Model 1.1 -------------------------------------------------------
+
+SSE0 = sum((y_m - mean(y_m))^2) #Null model
+SSE1.1 = sum((y_m-IPC_prec_1.1)^2)
+(RSQ1.1 = (SSE0 - SSE1.1)/SSE0)
+(Fratio1.1 = ((SSE0-SSE1.1)/(IPC_Temp_m11$df-1))/(SSE1.1/(100 - IPC_Temp_m11$df)))
+(pval_1.1   <- pf(Fratio1.1, IPC_Temp_m11$df-1, 100 - IPC_Temp_m11$df, lower.tail = FALSE))
