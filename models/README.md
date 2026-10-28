@@ -19,7 +19,7 @@ $$
 ## Model 1.3
 
 $$
-y_m = \alpha + \gamma_m + \beta_1 \eta_{1,m-1} + \beta_2 \eta_{2,m-1} + \epsilon_m
+y_m = \alpha + \gamma_m + \beta_{c,m} \eta_{c,m-1} + \epsilon_m
 $$
 
-$\eta_m$ son los scores del multivariate fPCA, un script aparte será destinada a la estimación de este método
+$\eta_{c,m-1}$ son los scores del departamento c del multivariate fPCA, un script aparte será destinada a la estimación de este método
